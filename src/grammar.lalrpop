@@ -1,11 +1,22 @@
 use std::str::FromStr;
-use crate::ast::*;
+use crate::ast;
 
 grammar;
 
-pub Term: i32 = {
-    <n:Num> => n,
-    "(" <t:Term> ")" => t,
+Num: i32 = <s:r"[0-9]+"> => i32::from_str(s).unwrap();
+
+pub Term: ast::Expr = {
+    <l:Literal> => ast::Expr::Literal(l),
+    "(" <e:Expr> ")" => e
+};
+     
+pub Expr: ast::Expr = {
+    <l:Expr> <b:BinOp> <r:Term> => ast::Expr::BinExp(b, Box::new(l), Box::new(r))
 };
 
-Num: i32 = <s:r"[0-9]+"> => i32::from_str(s).unwrap();
+BinOp: ast::BinOp = {
+    "+" => ast::BinOp::Add,
+    "-" => ast::BinOp::Sub,
+};
+
+pub Literal: ast::Literal = {};

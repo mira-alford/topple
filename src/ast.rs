@@ -35,19 +35,19 @@ pub enum Expr {
     RVar(RVar),
     Call(RVar, Vec<Expr>),
     Alloc(Box<Expr>),
-    UnExp(UnExp, Box<Expr>),
-    BinExp(BinExp, Box<Expr>, Box<Expr>),
+    UnExp(UnOp, Box<Expr>),
+    BinExp(BinOp, Box<Expr>, Box<Expr>),
     Literal(Literal),
     Cast(Typed<Box<Expr>>),
 }
 
-pub enum UnExp {
+pub enum UnOp {
     Not,
     Neg,
     Abs,
 }
 
-pub enum BinExp {
+pub enum BinOp {
     Add,
     Sub,
     Mul,
