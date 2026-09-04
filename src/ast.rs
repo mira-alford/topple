@@ -27,7 +27,7 @@ pub enum RVar {
     TypedId(Typed<Id>),
     Deref(Box<RVar>),
     Field(Box<RVar>, Id),
-    Slice(Box<RVar>, Box<Expr>, Box<Expr>),
+    Slice(Box<RVar>, Box<usize>, Box<usize>),
     Ref(Box<RVar>),
 }
 
@@ -36,15 +36,18 @@ pub enum Expr {
     Call(RVar, Vec<Expr>),
     Alloc(Box<Expr>),
     UnExp(UnOp, Box<Expr>),
-    BinExp(BinOp, Box<Expr>, Box<Expr>),
+    BinExp(Box<Expr>, BinOp, Box<Expr>),
     Literal(Literal),
     Cast(Typed<Box<Expr>>),
 }
 
+// fn binexp(op: BinOp, e1: Expr, e2: Expr) -> Expr {
+//     Expr::BinExp(op, Box::new(e1), Box::new(e2))
+// }
+
 pub enum UnOp {
     Not,
     Neg,
-    Abs,
 }
 
 pub enum BinOp {

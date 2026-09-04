@@ -4,19 +4,86 @@ use crate::ast;
 grammar;
 
 Num: i32 = <s:r"[0-9]+"> => i32::from_str(s).unwrap();
+ 
+pub Expr: Box<ast::Expr> = {
+    #[precedence(level="0")]
+    Literal => Box::new(ast::Expr::Literal(<>)),
 
-pub Term: ast::Expr = {
-    <l:Literal> => ast::Expr::Literal(l),
-    "(" <e:Expr> ")" => e
-};
-     
-pub Expr: ast::Expr = {
-    <l:Expr> <b:BinOp> <r:Term> => ast::Expr::BinExp(b, Box::new(l), Box::new(r))
+    #[precedence(level="1")] #[assoc(side="left")]
+    Expr BoolBinOp Expr => Box::new(ast::Expr::BinExp(<>)),
+
+    #[precedence(level="2")] #[assoc(side="left")]
+    Expr ComparisonBinOp Expr => Box::new(ast::Expr::BinExp(<>)),
+    
+    #[precedence(level="3")] #[assoc(side="left")]
+    Expr TermBinOp Expr => Box::new(ast::Expr::BinExp(<>)),
+
+    #[precedence(level="4")] #[assoc(side="left")]
+    Expr BitwiseBinOp Expr => Box::new(ast::Expr::BinExp(<>)),
+
+    #[precedence(level="5")] #[assoc(side="left")]
+    Expr FactorBinOp Expr => Box::new(ast::Expr::BinExp(<>)),
+
+    #[precedence(level="6")] #[assoc(side="left")]
+    Expr ExponentBinOp Expr => Box::new(ast::Expr::BinExp(<>)),
+
+    #[precedence(level="7")] #[assoc(side="left")]
+    UnOp Expr => Box::new(ast::Expr::UnExp(<>)),
 };
 
-BinOp: ast::BinOp = {
+TermBinOp: ast::BinOp = {
     "+" => ast::BinOp::Add,
     "-" => ast::BinOp::Sub,
 };
 
+FactorBinOp: ast::BinOp = {
+    "*" => ast::BinOp::Mul,
+    "/" => ast::BinOp::Div,
+    "%" => ast::BinOp::Mod,
+};
+
+ExponentBinOp: ast::BinOp = {
+    "**" => ast::BinOp::Pow
+};
+
+BitwiseBinOp: ast::BinOp = {
+    "&" => ast::BinOp::BvAnd,
+    "|" => ast::BinOp::BvOr,
+    "<<" => ast::BinOp::Shl,
+    ">>" => ast::BinOp::Shr,
+    "^" => ast::BinOp::BvXOr,
+    "++" => ast::BinOp::Cat,
+};
+
+ComparisonBinOp: ast::BinOp = {
+    "<" => ast::BinOp::Lt,
+    ">" => ast::BinOp::Gt,
+    "<=" => ast::BinOp::Leq,
+    ">=" => ast::BinOp::Geq,
+    "==" => ast::BinOp::Eq,
+    "!=" => ast::BinOp::Neq,
+};
+
+BoolBinOp: ast::BinOp = {
+    "&&" => ast::BinOp::And,
+    "||" => ast::BinOp::Or,
+};
+
+UnOp: ast::UnOp = {
+    "!" => ast::UnOp::Not,
+    "-" => ast::UnOp::Neg,
+};
+
 pub Literal: ast::Literal = {};
+
+LVar: ast::LVar = {
+    
+};
+
+Id: ast::Id = {
+    
+};
+
+Stmt: ast::Stmt = {
+    "var" <i:Id> => ast::Stmt::Var(i)
+};
