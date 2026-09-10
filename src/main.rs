@@ -1,5 +1,4 @@
-pub mod ast;
-pub mod absint;
+use topple::ast;
 
 use lalrpop_util::lalrpop_mod;
 

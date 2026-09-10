@@ -1,12 +1,12 @@
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Id {
-    name: String,
+    pub name: String,
 }
 
 #[derive(Clone)]
 pub struct Typed<T> {
     pub inner: T,
-    typ: Type,
+    pub typ: Type,
 }
 
 #[derive(Clone)]

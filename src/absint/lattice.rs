@@ -5,7 +5,7 @@ pub trait Lattice: Clone + Eq {
     fn meet(self, other: Self) -> Self;
 }
 
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FlatLattice<T: Eq + Clone> {
     Top,
     Value(T),
@@ -39,7 +39,7 @@ impl<T: Eq + Clone> Lattice for FlatLattice<T> {
 
 use std::collections::BTreeMap;
 
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum LatticeMap<K, L: Lattice> {
     BottomMap(BTreeMap<K, L>),
     TopMap(BTreeMap<K, L>),
