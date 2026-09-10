@@ -1,12 +1,15 @@
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Id {
     name: String,
 }
 
+#[derive(Clone)]
 pub struct Typed<T> {
-    inner: T,
+    pub inner: T,
     typ: Type,
 }
 
+#[derive(Clone)]
 pub enum Literal {
     Unit,
     BitVec(Typed<usize>),
@@ -16,12 +19,14 @@ pub enum Literal {
     Null,
 }
 
+#[derive(Clone)]
 pub enum LVar {
     Var(Id),
     Deref(Id),
     Field(Id, Id),
 }
 
+#[derive(Clone)]
 pub enum RVar {
     Id(Id),
     TypedId(Typed<Id>),
@@ -31,6 +36,7 @@ pub enum RVar {
     Ref(Box<RVar>),
 }
 
+#[derive(Clone)]
 pub enum Expr {
     RVar(RVar),
     Call(RVar, Vec<Expr>),
@@ -45,11 +51,13 @@ pub enum Expr {
 //     Expr::BinExp(op, Box::new(e1), Box::new(e2))
 // }
 
+#[derive(Clone)]
 pub enum UnOp {
     Not,
     Neg,
 }
 
+#[derive(Clone)]
 pub enum BinOp {
     Add,
     Sub,
@@ -73,6 +81,7 @@ pub enum BinOp {
     Cat,
 }
 
+#[derive(Clone)]
 pub enum Stmt {
     Var(Id),
     Assign(LVar, Expr),
@@ -84,6 +93,7 @@ pub enum Stmt {
     Return(Expr),
 }
 
+#[derive(Clone)]
 pub enum Type {
     Unit,
     BitVec { signed: bool, size: usize },

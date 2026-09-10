@@ -1,4 +1,5 @@
 pub mod ast;
+pub mod absint;
 
 use lalrpop_util::lalrpop_mod;
 
