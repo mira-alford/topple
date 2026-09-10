@@ -96,8 +96,7 @@ type SignDomain = StateDomain<SignValueDomain>;
 struct CondSignDomain;
 
 impl AbstractDomain for CondSignDomain {
-    // :sob:
-    type State = <StateDomain<SignValueDomain> as AbstractDomain>::State;
+    type State = LatticeMap<Id, FlatLattice<Sign>>;
 
     fn widen(a: Self::State, b: Self::State) -> Self::State {
         SignDomain::widen(a, b)
