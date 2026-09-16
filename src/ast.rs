@@ -1,36 +1,40 @@
-pub struct Id {
-    name: String,
-}
+#[derive(Debug)]
+pub struct Id(pub String);
 
+// Associate a type with the inner T
+#[derive(Debug)]
 pub struct Typed<T> {
     inner: T,
     typ: Type,
 }
 
+#[derive(Debug)]
 pub enum Literal {
     Unit,
-    BitVec(Typed<usize>),
+    Integer(i64),
+    Boolean(bool),
     Record {
         fields: Vec<(Typed<Id>, Box<Literal>)>,
     },
     Null,
 }
 
+#[derive(Debug)]
 pub enum LVar {
     Var(Id),
     Deref(Id),
     Field(Id, Id),
 }
 
+#[derive(Debug)]
 pub enum RVar {
     Id(Id),
-    TypedId(Typed<Id>),
     Deref(Box<RVar>),
     Field(Box<RVar>, Id),
-    Slice(Box<RVar>, Box<usize>, Box<usize>),
     Ref(Box<RVar>),
 }
 
+#[derive(Debug)]
 pub enum Expr {
     RVar(RVar),
     Call(RVar, Vec<Expr>),
@@ -41,40 +45,37 @@ pub enum Expr {
     Cast(Typed<Box<Expr>>),
 }
 
-// fn binexp(op: BinOp, e1: Expr, e2: Expr) -> Expr {
-//     Expr::BinExp(op, Box::new(e1), Box::new(e2))
-// }
-
+#[derive(Debug)]
 pub enum UnOp {
     Not,
     Neg,
 }
 
+#[derive(Debug)]
 pub enum BinOp {
+    // Integer math:
     Add,
     Sub,
     Mul,
     Div,
     Mod,
     Pow,
-    And,
-    Or,
-    Shl,
-    Shr,
-    BvAnd,
-    BvOr,
-    BvXOr,
+    // Comparison Ops
     Lt,
     Gt,
     Leq,
     Geq,
     Eq,
     Neq,
-    Cat,
+    // Boolean Ops
+    And,
+    Or,
+    XOr,
 }
 
+#[derive(Debug)]
 pub enum Stmt {
-    Var(Id),
+    Var(Id, Option<Type>),
     Assign(LVar, Expr),
     Input(LVar),
     Output(Expr),
@@ -84,9 +85,11 @@ pub enum Stmt {
     Return(Expr),
 }
 
+#[derive(Debug)]
 pub enum Type {
     Unit,
-    BitVec { signed: bool, size: usize },
+    Integer,
+    Boolean,
     Ref(Box<Type>),
     Fun { args: Vec<Type>, ret: Box<Type> },
     Array { typ: Box<Type>, len: usize },
@@ -94,6 +97,7 @@ pub enum Type {
     Variable(Id),
 }
 
+#[derive(Debug)]
 pub enum Declaration {
     Fun {
         name: Id,

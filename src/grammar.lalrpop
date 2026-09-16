@@ -3,32 +3,39 @@ use crate::ast;
 
 grammar;
 
-Num: i32 = <s:r"[0-9]+"> => i32::from_str(s).unwrap();
- 
-pub Expr: Box<ast::Expr> = {
-    #[precedence(level="0")]
-    Literal => Box::new(ast::Expr::Literal(<>)),
+Label: String = <s:r"[a-zA-Z_-][a-zA-Z0-9_-]+"> => s.to_string();
+Num: i64 = <s:r"[0-9]+"> => i64::from_str(s).unwrap();
+Bool: bool = {
+    "true" => true,
+    "false" => false
+};
 
-    #[precedence(level="1")] #[assoc(side="left")]
-    Expr BoolBinOp Expr => Box::new(ast::Expr::BinExp(<>)),
+pub Term: Box<ast::Expr> = {
+    Literal => Box::new(ast::Expr::Literal(<>)),
+    "(" <e:Expr> ")" => e,
+}
+
+pub Expr: Box<ast::Expr> = {
+    #[precedence(level="1")]
+    Term,
 
     #[precedence(level="2")] #[assoc(side="left")]
-    Expr ComparisonBinOp Expr => Box::new(ast::Expr::BinExp(<>)),
-    
+    UnOp Expr => Box::new(ast::Expr::UnExp(<>)),
+
     #[precedence(level="3")] #[assoc(side="left")]
-    Expr TermBinOp Expr => Box::new(ast::Expr::BinExp(<>)),
-
-    #[precedence(level="4")] #[assoc(side="left")]
-    Expr BitwiseBinOp Expr => Box::new(ast::Expr::BinExp(<>)),
-
-    #[precedence(level="5")] #[assoc(side="left")]
-    Expr FactorBinOp Expr => Box::new(ast::Expr::BinExp(<>)),
-
-    #[precedence(level="6")] #[assoc(side="left")]
     Expr ExponentBinOp Expr => Box::new(ast::Expr::BinExp(<>)),
 
+    #[precedence(level="4")] #[assoc(side="left")]
+    Expr FactorBinOp Expr => Box::new(ast::Expr::BinExp(<>)),
+
+    #[precedence(level="5")] #[assoc(side="left")]
+    Expr TermBinOp Expr => Box::new(ast::Expr::BinExp(<>)),
+
+    #[precedence(level="6")] #[assoc(side="left")]
+    Expr ComparisonBinOp Expr => Box::new(ast::Expr::BinExp(<>)),
+
     #[precedence(level="7")] #[assoc(side="left")]
-    UnOp Expr => Box::new(ast::Expr::UnExp(<>)),
+    Expr BoolBinOp Expr => Box::new(ast::Expr::BinExp(<>)),
 };
 
 TermBinOp: ast::BinOp = {
@@ -46,15 +53,6 @@ ExponentBinOp: ast::BinOp = {
     "**" => ast::BinOp::Pow
 };
 
-BitwiseBinOp: ast::BinOp = {
-    "&" => ast::BinOp::BvAnd,
-    "|" => ast::BinOp::BvOr,
-    "<<" => ast::BinOp::Shl,
-    ">>" => ast::BinOp::Shr,
-    "^" => ast::BinOp::BvXOr,
-    "++" => ast::BinOp::Cat,
-};
-
 ComparisonBinOp: ast::BinOp = {
     "<" => ast::BinOp::Lt,
     ">" => ast::BinOp::Gt,
@@ -67,6 +65,7 @@ ComparisonBinOp: ast::BinOp = {
 BoolBinOp: ast::BinOp = {
     "&&" => ast::BinOp::And,
     "||" => ast::BinOp::Or,
+    "^" => ast::BinOp::XOr,
 };
 
 UnOp: ast::UnOp = {
@@ -74,16 +73,34 @@ UnOp: ast::UnOp = {
     "-" => ast::UnOp::Neg,
 };
 
-pub Literal: ast::Literal = {};
+pub Literal: ast::Literal = {
+    Num => ast::Literal::Integer(<>),
+    Bool => ast::Literal::Boolean(<>)
+};
 
 LVar: ast::LVar = {
     
 };
 
-Id: ast::Id = {
-    
+Id: ast::Id = Label => ast::Id(<>);
+
+TypeList: Vec<ast::Type> = {
+    <t:Type> => Vec::from([t]),
+    <mut l:TypeList> "," <t:Type> => {
+        l.push(t);
+        l
+    }
+}
+
+Type: ast::Type = {
+    "unit" => ast::Type::Unit,
+    "int" => ast::Type::Integer,
+    "bool" => ast::Type::Boolean,
+    "&" <typ:Type> => ast::Type::Ref(Box::new(typ)),
+    "Fn" "(" <ts:TypeList> ")" "->" <r:Type> => ast::Type::Fun { args: ts, ret: Box::new(r) },
 };
 
-Stmt: ast::Stmt = {
-    "var" <i:Id> => ast::Stmt::Var(i)
+pub Stmt: ast::Stmt = {
+    "var" <i:Id> => ast::Stmt::Var(i, None),
+    "var" <i:Id> ":" <typ:Type> => ast::Stmt::Var(i, Some(typ))
 };
